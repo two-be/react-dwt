@@ -1,85 +1,55 @@
+/// <reference types="dwt" />
 import React from "react"
-import * as Dynamsoft from "dwt"
-
+import logo from "./logo.svg"
 import "./App.css"
-import dwtConfig from "./dwt/dynamsoft.webtwain.config"
 
-type State = {
-  scan: boolean
-}
+class App extends React.Component<{}, {}> {
 
-export default class App extends React.Component<{}, State> {
+  DWObject: WebTwain | undefined
 
-  DWObject!: WebTwain;
-
-  constructor(props: any) {
-    super(props)
-    this.state = {
-      scan: true
-    }
+  constructor() {
+    super({})
   }
 
-  componentDidMount = () => {
-    this.initScan()
-  }
+  componentDidMount() {
+    Dynamsoft.WebTwainEnv.AutoLoad = false
+    Dynamsoft.WebTwainEnv.Containers = [{ ContainerId: "dwtcontrolContainer", Width: "583px", Height: "513px" }]
+    Dynamsoft.WebTwainEnv.RegisterEvent("OnWebTwainReady", () => { this.Dynamsoft_OnReady() })
+    /**
+     * In order to use the full version, do the following
+     * 1. Change Dynamsoft.WebTwainEnv.Trial to false
+     * 2. Replace A-Valid-Product-Key with a full version key
+     * 3. Change Dynamsoft.WebTwainEnv.ResourcesPath to point to the full version 
+     *    resource files that you obtain after purchasing a key
+     */
+    Dynamsoft.WebTwainEnv.Trial = true
+    Dynamsoft.WebTwainEnv.ProductKey = "t0127vQIAACgBkEYzFunCvWBIR9kHQdX3QyyTpRi1oM/GeUqaUc0aDxuT5AcXkTB0X/z859xm7Wtjw5uChAsCPQvHgpD1duFZD1Ff2GF6+khgtPXXchj/MKu85pJGnzzjQrHRDuOxYZhH0ZrdEGe+jXYYjw3DPP+Zs82wJLIDH8mIUg=="
+    //Dynamsoft.WebTwainEnv.ResourcesPath = "https://tst.dynamsoft.com/libs/dwt/15.0"
 
-  download = () => {
-    this.DWObject.RemoveAllImages()
-    this.DWObject.HTTPDownload("asp.demosoft.me", "api/files/fileName/TestImage.pdf", () => {
-      console.log("Success")
-    }, (code, message) => {
-      console.log(code)
-      console.log(message)
-    })
+    Dynamsoft.WebTwainEnv.Load()
   }
 
   Dynamsoft_OnReady(): void {
     this.DWObject = Dynamsoft.WebTwainEnv.GetWebTwain("dwtcontrolContainer")
     if (this.DWObject) {
-      this.DWObject.Width = 200
+      this.DWObject.Addon.PDF.SetResolution(300);
+      this.DWObject.Addon.PDF.SetConvertMode(EnumDWT_ConvertMode.CM_RENDERALL);
       this.DWObject.Height = 600
-      this.DWObject.ShowImageEditor("dwtcontrolContainerLargeViewer", 800, 600)
       this.DWObject.SetViewMode(1, 4)
+      this.DWObject.ShowImageEditor("dwtcontrolContainerLargeViewer", 850, 600)
+      this.DWObject.ShowPageNumber = true
+      this.DWObject.Width = 200
     }
   }
 
-  initScan = () => {
-    this.setState({scan: false}, () => {
-      this.setState({scan: true}, () => {
-        dwtConfig.applyConfig(Dynamsoft)
-        Dynamsoft.WebTwainEnv.RegisterEvent("OnWebTwainReady", () => { this.Dynamsoft_OnReady() })
-        Dynamsoft.WebTwainEnv.Load()
-      })
-    })
-  }
-
-  upload = () => {
-    let strHTTPServer = "asp.demosoft.me"
-    let uploadfilename = "TestImage.pdf"
-    this.DWObject.HTTPUploadAllThroughPostAsPDF(strHTTPServer, "api/files", uploadfilename, () => {
-      console.log("Success")
-    }, (code, message) => {
-      console.log(code)
-      console.log(message)
-    })
-  }
-
-  render = () => {
+  render() {
     return (
       <div className="App">
-        <div>
-          <button onClick={this.initScan}>Init</button>
-          <button onClick={this.download}>Download</button>
-          <button onClick={this.upload}>Upload</button>
-        </div>
-        {
-          this.state.scan &&
-          <div>
-            <div id="dwtcontrolContainer" style={{ float: "left", marginRight: "20px" }}></div>
-            <div id="dwtcontrolContainerLargeViewer" style={{ float: "left" }}></div>
-          </div>
-        }
+        <div id="dwtcontrolContainer" style={{ float: "left", marginRight: "20px" }}></div>
+        <div id="dwtcontrolContainerLargeViewer" style={{ float: "left" }}></div>
       </div>
     )
   }
 }
+
+export default App

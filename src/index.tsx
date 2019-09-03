@@ -1,10 +1,9 @@
 import React from "react"
 import ReactDOM from "react-dom"
-import "../node_modules/dwt/dist/dynamsoft.webtwain.initiate"
-
 import "./index.css"
 import App from "./App"
 import * as serviceWorker from "./serviceWorker"
+import "../node_modules/dwt/dist/dynamsoft.webtwain.config.js"
 
 ReactDOM.render(<App />, document.getElementById("root"))
 
